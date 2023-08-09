@@ -1,0 +1,47 @@
+POST http://localhost:3000/login
+Content-Type: application/json
+
+{
+    "email": "testi@testi.fi",
+    "password": "Password"
+}
+
+###
+
+POST http://localhost:3000/logout
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiSnVzZWtraSIsImlhdCI6MTY4OTUyMjU2OCwiZXhwIjoxNjg5NTIzNDY4fQ.-dTc8uITx1uibvMKh0IYL5WruZ2DQqchkoBBCmgKaBc
+Content-Type: application/json
+
+{
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiSnVzZWtraSIsImlhdCI6MTY4OTUyMjIwMX0.6SFUdOwAQG4R8LAq3jAGiHuuZENZSHhIQG9BxseF9KM"
+}
+
+###
+
+GET http://localhost:3000/refresh
+Content-type: application/json
+
+
+
+###
+
+POST http://localhost:3000/register
+Content-Type: application/json
+
+{
+    "username": "Jusekki",
+    "password": "Password",
+    "email": "testi@testi.fi",
+    "firstname": "Juuso",
+    "lastname": "Testaaja"
+}
+
+###
+
+GET http://localhost:3000/user
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiSnVzZWtraSIsImlhdCI6MTY4OTUxMDAzMSwiZXhwIjoxNjg5NTEwOTMxfQ.qAMiTReN7DROuc-LVStO--EIiEWX_tcelbq447PmLdc
+Content-Type: application/json
+
+{
+    "id": 1
+}
