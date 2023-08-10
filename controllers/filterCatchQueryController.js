@@ -14,7 +14,7 @@ const handleFilterQuery = async (req, res) => {
   var allValues = [];
   var sql;
 
-  if (object) { 
+  if (object) {
     for (const key in object) {
       if (object.hasOwnProperty(key)) {
         for (const k in object[key]) {
@@ -47,7 +47,7 @@ const handleFilterQuery = async (req, res) => {
     var search_query;
     if (array.length == 0) {
       sqlSearch = `
-        SELECT catch_id, username, species_name, weight, catch_date, catch_img, location_province, location_city FROM fish_catch 
+        SELECT catch_id, username, species_name, weight, catch_date, location_province, location_city FROM fish_catch 
         JOIN users ON fish_catch.user_id = users.user_id 
         JOIN species ON fish_catch.species_id = species.species_id 
         JOIN lures ON fish_catch.lure_id = lures.lure_id 
@@ -61,11 +61,10 @@ const handleFilterQuery = async (req, res) => {
       `;
       totalQuery = mysql.format(sqlTotalQuery);
     } else {
-      if (array.includes('lure_id')) {
-        
+      if (array.includes("lure_id")) {
       }
       sqlSearch = `
-      SELECT catch_id, username, species_name, weight, catch_date, catch_img, location_province, location_city, maker_name
+      SELECT catch_id, username, species_name, weight, catch_date, location_province, location_city, maker_name
       FROM fish_catch 
       JOIN users ON fish_catch.user_id = users.user_id 
       JOIN species ON fish_catch.species_id = species.species_id 
@@ -75,7 +74,7 @@ const handleFilterQuery = async (req, res) => {
       WHERE
       `;
       sqlSearch += sql;
-      sqlSearch += " LIMIT ?, ?"
+      sqlSearch += " LIMIT ?, ?";
       sqlTotalQuery = `
       SELECT COUNT(*) AS total 
       FROM fish_catch 
@@ -86,33 +85,54 @@ const handleFilterQuery = async (req, res) => {
       JOIN lure_maker ON lures.maker_id = lure_maker.maker_id
       WHERE
       `;
-      sqlTotalQuery += sql
+      sqlTotalQuery += sql;
       totalQuery = mysql.format(sqlTotalQuery, allValues);
       allValues.push(startIndex, perPage);
-      search_query = mysql.format(sqlSearch, allValues,);
+      search_query = mysql.format(sqlSearch, allValues);
     }
-    await connection.query(search_query, async (err, result) => {
-      console.log(search_query)
+    await connection.query(search_query, async (err, results) => {
       if (err) return res.sendStatus(500);
-      const data = result.map((row) => {
-        const newDate = format(row.catch_date, "dd.MM.yyyy");
-        return {
-          id: row.catch_id,
-          username: row.username,
-          species_name: row.species_name,
-          weight: row.weight,
-          date: newDate,
-          img: row.catch_img,
-          location_province: row.location_province,
-          location_city: row.location_city,
-          lure_name: row.lure_name,
-        };
-      });
-      await connection.query(totalQuery, async (err, result) => {
-        connection.release();
+      const sqlImgs = `
+      SELECT catch_id, image_url
+      FROM images
+      WHERE catch_id IN (${results.map((item) => item.catch_id).join(",")})
+    `;
+      const img_query = mysql.format(sqlImgs);
+      await connection.query(img_query, async (err, result) => {
         if (err) return res.sendStatus(500);
-        const totalItems = result[0].total;
-        res.json({page, perPage, totalItems, totalPages: Math.ceil(totalItems / perPage), data});
+        const imagesMap = {};
+        result.forEach((image) => {
+          if (!imagesMap[image.catch_id]) {
+            imagesMap[image.catch_id] = [];
+          }
+          imagesMap[image.catch_id].push(image.image_url);
+        });
+        const data = results.map((row) => {
+          const newDate = format(row.catch_date, "dd.MM.yyyy");
+          return {
+            id: row.catch_id,
+            username: row.username,
+            species_name: row.species_name,
+            weight: row.weight,
+            date: newDate,
+            location_province: row.location_province,
+            location_city: row.location_city,
+            lure_name: row.lure_name,
+            images: imagesMap[row.catch_id] || [],
+          };
+        });
+        await connection.query(totalQuery, async (err, result) => {
+          connection.release();
+          if (err) return res.sendStatus(500);
+          const totalItems = result[0].total;
+          res.json({
+            page,
+            perPage,
+            totalItems,
+            totalPages: Math.ceil(totalItems / perPage),
+            data,
+          });
+        });
       });
     });
   });
