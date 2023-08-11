@@ -29,7 +29,7 @@ const handleRefreshToken = (req, res) => {
                 (err, decoded) => {
                     if (err || foundUser.username !== decoded.user) return res.sendStatus(403);
                     const accessToken = generateAccessToken({ user: decoded.username });
-                    res.json({ token: accessToken })
+                    res.json({user: decoded.user, token: accessToken })
                 }
             );
         })
