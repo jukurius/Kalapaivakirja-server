@@ -1,20 +1,20 @@
 var express = require("express");
 const app = express();
-const mysql = require("mysql");
 const db = require("../db");
 app.use(express.json());
 
+// KORJATTU
 const handleLures = async (req, res) => {
-  db.getConnection(async (err, connection) => {
-    if (err) return res.sendStatus(500);
+  try {
+    const connection = await db.promise().getConnection();
     const sqlSearch = "SELECT maker_id AS id, maker_name AS value FROM lure_maker";
-    const search_query = mysql.format(sqlSearch);
-    await connection.query(search_query, async (err, result) => {
-      connection.release();
-      if (err) return res.sendStatus(500);
-      res.json(result);
-    });
-  });
+    const [results] = await connection.execute(sqlSearch); // Use execute method
+    res.json(results);
+    await connection.release(); // Release the connection
+  } catch (error) {
+    console.error(err);
+    res.sendStatus(500);
+  }
 };
 
 module.exports = { handleLures };

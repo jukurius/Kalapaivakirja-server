@@ -26,14 +26,16 @@ app.use("/register", require("./routes/user/register"));
 app.use("/login", require("./routes/user/auth"));
 app.use("/refresh", require("./routes/user/refresh"));
 app.use("/logout", require("./routes/user/logout"));
-// API routes
+// PUBLIC routes
 app.use("/latestPosts", require("./routes/API/latestPosts"));
 app.use("/filterCatchQuery", require("./routes/API/filterCatchQuery"));
 app.use("/species", require("./routes/API/species"));
 app.use("/lures", require("./routes/API/lures"));
 app.use("/locations", require("./routes/API/locations"));
+app.use("/citys", require("./routes/API/citys"));
+// PRIVATE routes
+app.use("/upload/catch", require("./routes/API/uploadCatch"));
 app.use("/singlePost", require("./routes/API/singlePost"));
-app.use("/citys", require("./routes/API/citys"))
 
 const port = process.env.PORT;
 app.listen(port, () => console.log(`Server Started on port ${port}...`));
