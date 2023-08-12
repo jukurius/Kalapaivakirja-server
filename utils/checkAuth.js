@@ -16,7 +16,7 @@ const checkAuth = (req, res, next) => {
 
     // Perform any additional authorization checks based on the user data
     // For example, check if the user has the necessary role or permissions
-
+    console.log(user)
     req.user = user; // Set the user data in the request object
     next(); // Continue to the next middleware or route handler
   });

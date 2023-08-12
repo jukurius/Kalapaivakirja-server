@@ -27,7 +27,10 @@ const handleSinglePost = async (req, res) => {
     const [results] = await connection.execute(sqlSearch, [postId]); // Use execute method
     const [result] = await connection.execute(sqlImg, [postId]); // Use execute method
     const singleDataWithImages = results.map((item) => {
-      const newDate = format(item.catch_date, "dd.MM.yyyy");
+      let newDate;
+      if (item.catch_date !== null) {
+          newDate = format(item.catch_date, 'dd.MM.yyyy');
+      }
       return {
         id: item.catch_id,
         username: item.username,
@@ -51,7 +54,7 @@ const handleSinglePost = async (req, res) => {
     res.json(singleDataWithImages);
     connection.release(); // Release the connection
   } catch (error) {
-    console.error(err);
+    console.error(error);
     res.sendStatus(500);
   }
 };

@@ -8,6 +8,7 @@ const { format } = require('date-fns');
 // TOIMII
 const handleFilterQuery = async (req, res) => {
     const object = req.query;
+    console.log(object)
     const page = parseInt(req.query.page) || 1;
     const perPage = 20; // Number of items to return per page
     const startIndex = (page - 1) * perPage;
@@ -111,7 +112,10 @@ const handleFilterQuery = async (req, res) => {
         });
 
         const data = results.map((row) => {
-            const newDate = format(row.catch_date, 'dd.MM.yyyy');
+            let newDate;
+            if (row.catch_date !== null) {
+                newDate = format(row.catch_date, 'dd.MM.yyyy');
+            }
             return {
                 id: row.catch_id,
                 username: row.username,

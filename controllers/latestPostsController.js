@@ -37,7 +37,10 @@ const handleLatestPosts = async (req, res) => {
         });
 
         const catchDataWithImages = results.map((item) => {
-            const newDate = format(item.catch_date, 'dd.MM.yyyy');
+            let newDate;
+            if (item.catch_date !== null) {
+                newDate = format(item.catch_date, 'dd.MM.yyyy');
+            }
             return {
                 id: item.catch_id,
                 username: item.username,

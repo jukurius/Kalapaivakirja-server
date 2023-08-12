@@ -1,55 +1,16 @@
 var express = require("express");
 const app = express();
-const mysql = require("mysql");
 const db = require("../db");
 app.use(express.json());
 const cloudinary = require("cloudinary").v2;
-
-const handleMakerSearch = async (data) => {
-  const query = "SELECT maker_id FROM lure_maker WHERE maker_name = ?";
-  const [result] = await db.promise().execute(query, [data]);
-  return result[0].maker_id;
-};
-const handleColorInsert = async (one, two, three) => {
-  const query =
-    "INSERT INTO lure_color (color_first, color_second, color_third) VALUES (?, ?, ?)";
-  const [result] = await db.promise().execute(query, [one, two, three]);
-  return result.insertId;
-};
-const handleSpecieSearch = async (data) => {
-  const query = "SELECT species_id FROM species WHERE species_name = ?";
-  const [result] = await db.promise().execute(query, [data]);
-  return result[0].species_id;
-};
-const handleLureInsert = async (makerId, colorId, size) => {
-  const query = "INSERT INTO lures(maker_id, color_id, size) VALUES (?, ?, ?)";
-  const [result] = await db.promise().execute(query, [makerId, colorId, size]);
-  return result.insertId;
-};
-const handleLocationInsert = async (province, city, lake) => {
-  const query =
-    "INSERT INTO locations(location_province, location_city, location_lake) VALUES (?, ?, ?)";
-  const [result] = await db.promise().execute(query, [province, city, lake]);
-  return result.insertId;
-};
-const handleWeatherInsert = async (condition, airTemp, waterTemp, wind) => {
-  const query =
-    "INSERT INTO weather(weather_condition, air_temperature, water_tempature, wind) VALUES (?, ?, ?, ?)";
-  const [result] = await db
-    .promise()
-    .execute(query, [condition, airTemp, waterTemp, wind]);
-  return result.insertId;
-};
-const handleImageInsert = async (catchId, imgUrl) => {
-  try {
-    for (const imageUrl of imgUrl) {
-      const query = 'INSERT INTO images (catch_id, image_url) VALUES (?, ?)';
-      const [result] = await db.promise().execute(query, [catchId, imageUrl]);
-    }
-  } catch (error) {
-    console.error('Error inserting images:', error);
-  }
-};
+const userSearch = require("../helpers/userSearch");
+const makerSearch = require("../helpers/makerSearch");
+const colorInsert = require("../helpers/colorInsert");
+const specieSearch = require("../helpers/specieSearch");
+const lureInsert = require("../helpers/lureInsert");
+const locationInsert = require("../helpers/locationInsert");
+const weatherInsert = require("../helpers/weatherInsert");
+const imageInsert = require("../helpers/imageInsert");
 
 const handleUploadCatch = async (req, res) => {
   const specie = req.body.specie || undefined; // musthave c
@@ -71,7 +32,9 @@ const handleUploadCatch = async (req, res) => {
   const waterTemp = req.body.waterTemp || null;
   const wind = req.body.wind || null;
   const catchDate = req.body.catchDate || null;
-  const user = 1; //req.user;
+  const user = req.user.user;
+  console.log(user)
+  console.log(req.body)
 
   if (
     !specie ||
@@ -86,20 +49,20 @@ const handleUploadCatch = async (req, res) => {
     return res.status(400).json({ error: "Missing required fields" });
   }
   try {
-    const maker_id = await handleMakerSearch(lure);
-    const color_id = await handleColorInsert(
+    const maker_id = await makerSearch.handleMakerSearch(lure);
+    const color_id = await colorInsert.handleColorInsert(
       lureColorOne,
       lureColorTwo,
       lureColorThree
     );
-    const species_id = await handleSpecieSearch(specie);
-    const lure_id = await handleLureInsert(maker_id, color_id, lureLength);
-    const location_id = await handleLocationInsert(
+    const species_id = await specieSearch.handleSpecieSearch(specie);
+    const lure_id = await lureInsert.handleLureInsert(maker_id, color_id, lureLength);
+    const location_id = await locationInsert.handleLocationInsert(
       locationProvince,
       locationCity,
       locationLake
     );
-    const weather_id = await handleWeatherInsert(
+    const weather_id = await weatherInsert.handleWeatherInsert(
       weatherCondition,
       airTemp,
       waterTemp,
@@ -110,7 +73,7 @@ const handleUploadCatch = async (req, res) => {
     const weight = specieWeight;
     const length = specieLength;
     const fishing_style = fishingStyle;
-    const user_id = user;
+    const user_id = await userSearch.handleUserSearch(user);
 
     console.log("depth", catch_depth)
     // Now you have the IDs from the first three inserts, use them in the final insert
@@ -119,7 +82,7 @@ const handleUploadCatch = async (req, res) => {
     const catchData = [user_id, species_id, lure_id, location_id, weather_id, catch_date, catch_depth, weight, length, fishing_style];
 
     const [catchResult] = await db.promise().execute(catchQuery, catchData);
-    handleImageInsert(catchResult.insertId, images);
+    await imageInsert.handleImageInsert(catchResult.insertId, images);
     res.sendStatus(201);
   } catch (error) {
     console.error(error);
