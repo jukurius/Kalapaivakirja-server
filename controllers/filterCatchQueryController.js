@@ -1,150 +1,123 @@
-var express = require('express');
+const express = require('express');
 const app = express();
-const mysql = require('mysql2/promise'); // Import mysql2/promise
-const db = require('../db');
-app.use(express.json());
 const { format } = require('date-fns');
 
-// TOIMII
+// Require your database connection pool from '../db'
+const db = require('../db');
+
+app.use(express.json());
+
 const handleFilterQuery = async (req, res) => {
-    const object = req.query;
-    console.log(object)
-    const page = parseInt(req.query.page) || 1;
-    const perPage = 20; // Number of items to return per page
+    const filters = req.query;
+    console.log(filters);
+    const page = parseInt(filters.page) || 1;
+    const perPage = 20;
     const startIndex = (page - 1) * perPage;
-    var array = [];
-    var allValues = [];
-    var sql;
-
-    if (object) {
-        for (const key in object) {
-            if (object.hasOwnProperty(key)) {
-                for (const k in object[key]) {
-                    if (object[key].hasOwnProperty(k)) {
-                        if (k === 'filterArr') {
-                            array.push(object[key]);
-                        }
-                    }
-                }
-            }
+    const filterConditions = [];
+    const filterValues = [];
+  
+    for (const key in filters) {
+        if (filters.hasOwnProperty(key) && key !== 'page') {
+          const { filterType, filterArr } = filters[key];
+          if (filterArr && filterArr.length > 0) {
+            const placeholders = filterArr.map(() => `${filterType} = ?`).join(' OR ');
+            filterConditions.push(`(${placeholders})`);
+            filterValues.push(...filterArr);
+          }
         }
-
-        const unionQueries = array.map(({ filterType, filterArr }) => {
-            const placeholders = filterArr
-                .map(() => `${filterType} = ?`)
-                .join(' OR ');
-            for (const value of filterArr) {
-                allValues.push(value);
-            }
-            return `${placeholders}`;
-        });
-        sql = unionQueries.join(' OR ');
-    }
-
+      }
+    
+      let whereClause = '';
+    
+      if (filterConditions.length > 0) {
+        whereClause = 'WHERE ' + filterConditions.join(' AND ');
+      }
     try {
-        const connection = await db.promise().getConnection(); // Get a promise-based connection
-        var sqlSearch;
-        var sqlTotalQuery;
-        var totalQuery;
-        var search_query;
+      const connection = await db.promise().getConnection();
+  
+      const sqlSearch = `
+        SELECT catch_id, username, species_name, weight, catch_date, location_province, location_city
+        FROM fish_catch
+        JOIN users ON fish_catch.user_id = users.user_id
+        JOIN species ON fish_catch.species_id = species.species_id
+        JOIN lures ON fish_catch.lure_id = lures.lure_id
+        JOIN lure_maker ON lures.maker_id = lure_maker.maker_id
+        JOIN locations ON fish_catch.location_id = locations.location_id
+        JOIN weather ON fish_catch.weather_id = weather.weather_id
+        ${whereClause}
+        LIMIT ?, ?
+      `;
+  
+      const searchQueryParams = filterValues.length > 0 ? [...filterValues, startIndex, perPage] : [startIndex, perPage];
+      console.log('Executing query:', sqlSearch);
+      console.log('Query parameters:', searchQueryParams);
+      const [results] = await connection.query(sqlSearch, searchQueryParams);
+  
+      const catchIds = results.map((item) => item.catch_id);
 
-        if (array.length === 0) {
-            sqlSearch = `
-                SELECT catch_id, username, species_name, weight, catch_date, location_province, location_city
-                FROM fish_catch 
-                JOIN users ON fish_catch.user_id = users.user_id 
-                JOIN species ON fish_catch.species_id = species.species_id 
-                JOIN lures ON fish_catch.lure_id = lures.lure_id 
-                JOIN locations ON fish_catch.location_id = locations.location_id 
-                JOIN weather ON fish_catch.weather_id = weather.weather_id
-                LIMIT ?, ?
-            `;
-            search_query = mysql.format(sqlSearch, [startIndex, perPage]);
-            sqlTotalQuery = `
-                SELECT COUNT(*) AS total FROM fish_catch
-            `;
-            totalQuery = mysql.format(sqlTotalQuery);
-        } else {
-            sqlSearch = `
-                SELECT catch_id, username, species_name, weight, catch_date, location_province, location_city, maker_name
-                FROM fish_catch 
-                JOIN users ON fish_catch.user_id = users.user_id 
-                JOIN species ON fish_catch.species_id = species.species_id 
-                JOIN locations ON fish_catch.location_id = locations.location_id 
-                JOIN lures ON fish_catch.lure_id = lures.lure_id 
-                JOIN lure_maker ON lures.maker_id = lure_maker.maker_id
-                WHERE
-            `;
-            sqlSearch += sql;
-            sqlSearch += ' LIMIT ?, ?';
-            sqlTotalQuery = `
-                SELECT COUNT(*) AS total 
-                FROM fish_catch 
-                JOIN users ON fish_catch.user_id = users.user_id 
-                JOIN species ON fish_catch.species_id = species.species_id 
-                JOIN locations ON fish_catch.location_id = locations.location_id 
-                JOIN lures ON fish_catch.lure_id = lures.lure_id 
-                JOIN lure_maker ON lures.maker_id = lure_maker.maker_id
-                WHERE
-            `;
-            sqlTotalQuery += sql;
-            totalQuery = mysql.format(sqlTotalQuery, allValues.concat([startIndex, perPage]));
-            search_query = mysql.format(sqlSearch, allValues.concat([startIndex, perPage]));
-        }
-
-        const [results] = await connection.execute(search_query); // Use execute method
-
-        const catchIds = results.map((item) => item.catch_id);
+      if (catchIds.length > 0) {
+        const catchIdPlaceholders = catchIds.map(() => '?').join(',');
         const sqlImgs = `
-            SELECT catch_id, image_url
-            FROM images
-            WHERE catch_id IN (${catchIds.join(',')})
+          SELECT catch_id, image_url
+          FROM images
+          WHERE catch_id IN (${catchIdPlaceholders})
         `;
-
-        const [imgResult] = await connection.execute(sqlImgs); // Use execute method
-
+      
+        const [imgResult] = await connection.execute(sqlImgs, catchIds);
+      
         const imagesMap = {};
         imgResult.forEach((image) => {
-            if (!imagesMap[image.catch_id]) {
-                imagesMap[image.catch_id] = [];
-            }
-            imagesMap[image.catch_id].push(image.image_url);
+          if (!imagesMap[image.catch_id]) {
+            imagesMap[image.catch_id] = [];
+          }
+          imagesMap[image.catch_id].push(image.image_url);
         });
-
+      
         const data = results.map((row) => {
-            let newDate;
-            if (row.catch_date !== null) {
-                newDate = format(row.catch_date, 'dd.MM.yyyy');
-            }
-            return {
-                id: row.catch_id,
-                username: row.username,
-                species_name: row.species_name,
-                weight: row.weight,
-                date: newDate,
-                location_province: row.location_province,
-                location_city: row.location_city,
-                lure_name: row.lure_name,
-                images: imagesMap[row.catch_id] || [],
-            };
+          let newDate;
+          if (row.catch_date !== null) {
+            newDate = format(row.catch_date, 'dd.MM.yyyy');
+          }
+          return {
+            id: row.catch_id,
+            username: row.username,
+            species_name: row.species_name,
+            weight: row.weight,
+            date: newDate,
+            location_province: row.location_province,
+            location_city: row.location_city,
+            lure_name: row.lure_name,
+            images: imagesMap[row.catch_id] || [],
+          };
         });
-
-        const [result] = await connection.execute(totalQuery); // Use execute method
-        const totalItems = result[0].total;
-
-        res.json({
-            page,
-            perPage,
-            totalItems,
-            totalPages: Math.ceil(totalItems / perPage),
-            data,
-        });
-
-        connection.release(); // Release the connection
+  
+      const sqlTotalQuery = `
+        SELECT COUNT(*) AS total 
+        FROM fish_catch 
+        JOIN users ON fish_catch.user_id = users.user_id 
+        JOIN species ON fish_catch.species_id = species.species_id 
+        JOIN locations ON fish_catch.location_id = locations.location_id 
+        JOIN lures ON fish_catch.lure_id = lures.lure_id 
+        JOIN lure_maker ON lures.maker_id = lure_maker.maker_id
+        ${whereClause}
+      `;
+  
+      const [result] = await connection.execute(sqlTotalQuery, filterValues);
+      const totalItems = result[0].total;
+  
+      res.json({
+        page,
+        perPage,
+        totalItems,
+        totalPages: Math.ceil(totalItems / perPage),
+        data,
+      })};
+  
+      connection.release();
     } catch (err) {
-        console.error(err);
-        res.sendStatus(500);
+      console.error(err);
+      res.sendStatus(500);
     }
-};
-
-module.exports = { handleFilterQuery };
+  };
+  
+  module.exports = { handleFilterQuery };
