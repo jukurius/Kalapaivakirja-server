@@ -1,8 +1,6 @@
 const express = require('express');
 const app = express();
 const { format } = require('date-fns');
-
-// Require your database connection pool from '../db'
 const db = require('../db');
 
 app.use(express.json());

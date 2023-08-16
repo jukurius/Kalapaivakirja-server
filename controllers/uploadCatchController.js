@@ -2,7 +2,6 @@ var express = require("express");
 const app = express();
 const db = require("../db");
 app.use(express.json());
-const cloudinary = require("cloudinary").v2;
 const userSearch = require("../helpers/userSearch");
 const makerSearch = require("../helpers/makerSearch");
 const colorInsert = require("../helpers/colorInsert");
@@ -11,9 +10,11 @@ const lureInsert = require("../helpers/lureInsert");
 const locationInsert = require("../helpers/locationInsert");
 const weatherInsert = require("../helpers/weatherInsert");
 const imageInsert = require("../helpers/imageInsert");
+const imgToCloudinary = require("../helpers/imgToCloudinary");
 
 const handleUploadCatch = async (req, res) => {
   const specie = req.body.specie || undefined; // musthave c
+  console.log(specie)
   const specieWeight = req.body.specieWeight || undefined; // musthave c
   const specieLength = req.body.specieLength || null;
   const lure = req.body.lure || undefined; // musthave c
@@ -34,7 +35,6 @@ const handleUploadCatch = async (req, res) => {
   const catchDate = req.body.catchDate || null;
   const user = req.user.user;
   console.log(user)
-  console.log(req.body)
 
   if (
     !specie ||
@@ -74,15 +74,14 @@ const handleUploadCatch = async (req, res) => {
     const length = specieLength;
     const fishing_style = fishingStyle;
     const user_id = await userSearch.handleUserSearch(user);
-
-    console.log("depth", catch_depth)
+    const img_urls = await imgToCloudinary.handleCloudinaryUp(images);
     // Now you have the IDs from the first three inserts, use them in the final insert
     const catchQuery =
       "INSERT INTO fish_catch (user_id, species_id, lure_id, location_id, weather_id, catch_date, catch_depth, weight, length, fishing_style) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     const catchData = [user_id, species_id, lure_id, location_id, weather_id, catch_date, catch_depth, weight, length, fishing_style];
 
     const [catchResult] = await db.promise().execute(catchQuery, catchData);
-    await imageInsert.handleImageInsert(catchResult.insertId, images);
+    await imageInsert.handleImageInsert(catchResult.insertId, img_urls);
     res.sendStatus(201);
   } catch (error) {
     console.error(error);
