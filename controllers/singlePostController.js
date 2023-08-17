@@ -12,7 +12,7 @@ const handleSinglePost = async (req, res) => {
   try {
     const connection = await db.promise().getConnection();
     const sqlSearch = `
-      SELECT catch_id, username, species_name, weight, catch_date, location_province, location_city, location_lake, maker_name, color_first, color_second, color_third, size, air_temperature, water_tempature, wind
+      SELECT catch_id, username, species_name, weight, catch_date, location_province, location_city, location_lake, maker_name, color_first, color_second, color_third, size, weather_condition, upload_date, fishing_style, catch_length, catch_depth, air_temperature, water_tempature, wind
       FROM fish_catch_database.fish_catch 
       JOIN users ON fish_catch.user_id = users.user_id 
       JOIN species ON fish_catch.species_id = species.species_id 
@@ -37,6 +37,7 @@ const handleSinglePost = async (req, res) => {
         species_name: item.species_name,
         weight: item.weight,
         date: newDate,
+        upload_date: item.upload_date,
         location_province: item.location_province,
         location_city: item.location_city,
         location_lake: item.location_lake,
@@ -45,6 +46,10 @@ const handleSinglePost = async (req, res) => {
         color_second: item.color_second,
         color_third: item.color_third,
         size: item.size,
+        weather_condition: item.weather_condition,
+        fishing_style: item.fishing_style,
+        catch_length: item.catch_length,
+        catch_depth: item.catch_depth,
         air_temp: item.air_temperature,
         water_temp: item.water_tempature,
         wind: item.wind,

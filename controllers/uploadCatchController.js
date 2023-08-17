@@ -77,7 +77,7 @@ const handleUploadCatch = async (req, res) => {
     const img_urls = await imgToCloudinary.handleCloudinaryUp(images);
     // Now you have the IDs from the first three inserts, use them in the final insert
     const catchQuery =
-      "INSERT INTO fish_catch (user_id, species_id, lure_id, location_id, weather_id, catch_date, catch_depth, weight, length, fishing_style) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      "INSERT INTO fish_catch (user_id, species_id, lure_id, location_id, weather_id, catch_date, catch_depth, weight, catch_length, fishing_style) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     const catchData = [user_id, species_id, lure_id, location_id, weather_id, catch_date, catch_depth, weight, length, fishing_style];
 
     const [catchResult] = await db.promise().execute(catchQuery, catchData);

@@ -1,19 +1,11 @@
-const cloudinary = require("cloudinary").v2;
-require("dotenv").config();
-
-cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.API_KEY,
-  api_secret: process.env.API_SECRET,
-  secure: true
-});
+const cloudinary = require('../cloudinary');
 
 const handleCloudinaryUp = async (imgs) => {
   const cloudinaryUploadPromises = imgs.map(async (file) => {
     const result = await cloudinary.uploader.upload(file, {
       folder: "Kalapaivakirja/uploads",
       resource_type: "auto",
-      width: 800,
+      width: 1000,
       crop: "scale"
     });
     return result.secure_url;
