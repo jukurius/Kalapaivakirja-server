@@ -31,7 +31,6 @@ app.use("/refresh", require("./routes/user/refresh"));
 app.use("/logout", require("./routes/user/logout"));
 // PUBLIC routes
 app.use("/latestPosts", require("./routes/API/latestPosts"));
-app.use("/filterCatchQuery", require("./routes/API/filterCatchQuery"));
 app.use("/species", require("./routes/API/species"));
 app.use("/lures", require("./routes/API/lures"));
 app.use("/locations", require("./routes/API/locations"));
@@ -39,6 +38,8 @@ app.use("/citys", require("./routes/API/citys"));
 // PRIVATE routes
 app.use("/upload/catch", require("./routes/API/uploadCatch"));
 app.use("/singlePost", require("./routes/API/singlePost"));
+app.use("/filterCatchQuery", require("./routes/API/filterCatchQuery"));
+app.use("/users", require("./routes/API/users"));
 
 const port = process.env.PORT;
 app.listen(port, () => console.log(`Server Started on port ${port}...`));

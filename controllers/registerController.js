@@ -2,6 +2,7 @@ var express = require('express');
 const app = express();
 const bcrypt = require("bcrypt")
 const db = require('../db');
+const imgToCloudinary = require('../helpers/imgToCloudinary');
 app.use(express.json());
 
 const handleNewUser = async (req, res) => {
@@ -15,18 +16,26 @@ const handleNewUser = async (req, res) => {
     const lastname = req.body.lastname || null;
     const age = req.body.age || null;
     const email = req.body.email || null;
+    const image = req.body.image || null;
+    const description = req.body.description || null;
+    const imageArr = [];
+
+    if (image) {
+        imageArr.push(image);
+    }
 
     try {
         const connection = await db.promise().getConnection();
         const sqlSearch = "SELECT * FROM users WHERE username = ?"
-        const sqlInsert = "INSERT INTO users (user_id, username, password, firstname, lastname, age, email) VALUES (0,?,?,?,?,?,?)"
+        const sqlInsert = "INSERT INTO users (user_id, username, password, firstname, lastname, age, email, image, description) VALUES (0,?,?,?,?,?,?,?,?)"
         const [userResult] = await connection.execute(sqlSearch, [user]); // Use execute method
         if (userResult.length !== 0) {
             connection.release()
             return res.status(409).json({ error: "username already exists" });
         }
         else {
-            await connection.execute(sqlInsert, [user, hashedPassword, firstname, lastname, age, email]); // Use execute method
+            const imgUrl = await imgToCloudinary.handleCloudinaryUp(imageArr);
+            await connection.execute(sqlInsert, [user, hashedPassword, firstname, lastname, age, email, imgUrl[0], description]); // Use execute method
             res.status(201).json({ message: "User created successfully" });
         }
         connection.release(); // Release the connection

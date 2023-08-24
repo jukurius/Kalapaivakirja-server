@@ -5,7 +5,7 @@ const handleCloudinaryUp = async (imgs) => {
     const result = await cloudinary.uploader.upload(file, {
       folder: "Kalapaivakirja/uploads",
       resource_type: "auto",
-      width: 1000,
+      height: 920,
       crop: "scale"
     });
     return result.secure_url;

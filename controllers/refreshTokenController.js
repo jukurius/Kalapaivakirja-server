@@ -28,7 +28,7 @@ const handleRefreshToken = async (req, res) => {
             (err, decoded) => {
                 if (err || foundUser.username !== decoded.user) return res.sendStatus(403);
                 const accessToken = generateAccessToken({ user: decoded.user });
-                res.json({ user: decoded.user, token: accessToken });
+                res.json({ user: decoded.user, token: accessToken, img: foundUser.image });
             }
         );
 

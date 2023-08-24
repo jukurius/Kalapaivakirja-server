@@ -15,7 +15,7 @@ const handleLatestPosts = async (req, res) => {
             JOIN users ON fish_catch.user_id = users.user_id
             JOIN species ON fish_catch.species_id = species.species_id
             JOIN locations ON fish_catch.location_id = locations.location_id
-            ORDER BY catch_id DESC LIMIT 8
+            ORDER BY catch_id DESC LIMIT 16
         `;
         const [results] = await connection.execute(sqlSearch); // Use execute method
 
