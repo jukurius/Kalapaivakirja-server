@@ -28,13 +28,15 @@ const handleFilterQuery = async (req, res) => {
       let whereClause = '';
     
       if (filterConditions.length > 0) {
-        whereClause = 'WHERE ' + filterConditions.join(' AND ');
+        whereClause = 'WHERE is_private = 0 AND ' + filterConditions.join(' AND ');
+      } else {
+        whereClause = 'WHERE is_private = 0 ';
       }
     try {
       const connection = await db.promise().getConnection();
   
       const sqlSearch = `
-        SELECT catch_id, username, species_name, weight, catch_date, location_province, location_city
+        SELECT catch_id, username, species_name, weight, catch_date, location_province, location_city, is_private
         FROM fish_catch
         JOIN users ON fish_catch.user_id = users.user_id
         JOIN species ON fish_catch.species_id = species.species_id

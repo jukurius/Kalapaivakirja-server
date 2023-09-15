@@ -18,16 +18,20 @@ const handleNewUser = async (req, res) => {
     const email = req.body.email || null;
     const image = req.body.image || null;
     const description = req.body.description || null;
+    const activity = req.body.activity || null;
+    const method = req.body.method || null;
     const imageArr = [];
 
-    if (image) {
+    console.log(image)
+
+    if (image !== null) {
         imageArr.push(image);
     }
 
     try {
         const connection = await db.promise().getConnection();
         const sqlSearch = "SELECT * FROM users WHERE username = ?"
-        const sqlInsert = "INSERT INTO users (user_id, username, password, firstname, lastname, age, email, image, description) VALUES (0,?,?,?,?,?,?,?,?)"
+        const sqlInsert = "INSERT INTO users (user_id, username, password, firstname, lastname, age, email, image, description, experience, fishing_method) VALUES (0,?,?,?,?,?,?,?,?,?,?)"
         const [userResult] = await connection.execute(sqlSearch, [user]); // Use execute method
         if (userResult.length !== 0) {
             connection.release()
@@ -35,7 +39,7 @@ const handleNewUser = async (req, res) => {
         }
         else {
             const imgUrl = await imgToCloudinary.handleCloudinaryUp(imageArr);
-            await connection.execute(sqlInsert, [user, hashedPassword, firstname, lastname, age, email, imgUrl[0], description]); // Use execute method
+            await connection.execute(sqlInsert, [user, hashedPassword, firstname, lastname, age, email, imgUrl.length > 0 ? imgUrl[0] : null, description, activity, method]); // Use execute method
             res.status(201).json({ message: "User created successfully" });
         }
         connection.release(); // Release the connection

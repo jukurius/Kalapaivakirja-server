@@ -1,6 +1,6 @@
 var express = require('express');
 const app = express();
-const mysql = require('mysql2/promise'); // Import mysql2/promise
+const mysql = require('mysql2/promise');
 const db = require('../db'); 
 app.use(express.json());
 const { format } = require('date-fns'); 
@@ -10,11 +10,12 @@ const handleLatestPosts = async (req, res) => {
     try {
         const connection = await db.promise().getConnection(); // Get a promise-based connection
         const sqlSearch = `
-            SELECT catch_id, username, species_name, weight, catch_date, location_province, location_city
+            SELECT catch_id, username, species_name, weight, catch_date, location_province, location_city, is_private
             FROM fish_catch
             JOIN users ON fish_catch.user_id = users.user_id
             JOIN species ON fish_catch.species_id = species.species_id
             JOIN locations ON fish_catch.location_id = locations.location_id
+            WHERE is_private = 0
             ORDER BY catch_id DESC LIMIT 16
         `;
         const [results] = await connection.execute(sqlSearch); // Use execute method

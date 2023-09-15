@@ -14,7 +14,7 @@ const handleLocations = async (req, res) => {
     res.json(results);
     connection.release(); // Release the connection
   } catch (error) {
-    console.error(err);
+    console.error(error);
     res.sendStatus(500);
   }
 };
