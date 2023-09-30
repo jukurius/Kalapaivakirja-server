@@ -42,6 +42,9 @@ app.use("/filterCatchQuery", require("./routes/API/filterCatchQuery"));
 app.use("/users", require("./routes/API/users"));
 app.use("/comments", require("./routes/API/getComments"));
 app.use("/newComment", require("./routes/API/addComment"));
+app.use("/user", require("./routes/API/user"));
+app.use("/catches", require("./routes/API/postsByUser"));
+app.use("/analytics", require("./routes/API/analytics"));
 
 const port = process.env.PORT;
 app.listen(port, () => console.log(`Server Started on port ${port}...`));

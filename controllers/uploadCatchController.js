@@ -37,7 +37,6 @@ const handleUploadCatch = async (req, res) => {
   const lat = req.body.lat || null;
   const lng = req.body.lng || null;
   const is_private = req.body.is_private || 0;
-  console.log(user);
 
   if (
     !specie ||
