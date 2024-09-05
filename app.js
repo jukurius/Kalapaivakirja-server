@@ -2,10 +2,19 @@ const express = require("express");
 const app = express();
 var cors = require("cors");
 var cookieParser = require("cookie-parser");
+const dotenv = require("dotenv");
+const fs = require("fs");
 
+if (fs.existsSync(".env.local") && process.env.NODE_ENV !== "production") {
+  dotenv.config({ path: ".env.local" });
+  console.log("Using .env.local for development environment");
+} else {
+  dotenv.config();
+  console.log("Using .env for production environment");
+}
 
-app.use(express.json({ limit: '30mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: "30mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 var allowedOrigins = ["http://127.0.0.1:5173", "http://localhost:5173"];
 app.use(
