@@ -6,7 +6,7 @@ app.use(express.json());
 // KORJATTU
 const handleCityLocation = async (req, res) => {
     const locationCode = req.query.locationCode;
-    console.log(locationCode);
+
     try {
         const connection = await db.promise().getConnection();
         const sqlSearch =

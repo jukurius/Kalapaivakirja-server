@@ -28,7 +28,6 @@ const handleMethods = (data) => {
     for (const key in colors) {
         if (Object.hasOwnProperty.call(colors, key)) {
             if (key === value) { 
-                console.log("löytyi")
                 return colors[key];
             }
         }
@@ -48,9 +47,7 @@ const handleFishingMethods = async (specie) => {
   const query =
     "SELECT fishing_style FROM fish_catch_database.fish_catch join species on fish_catch.species_id = species.species_id where species_name = ?";
   const [result] = await db.promise().execute(query, [specie]);
-  console.log(result)
   const formedData = handleMethods(result);
-  console.log(formedData);
   return formedData;
 };
 

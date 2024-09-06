@@ -57,7 +57,6 @@ const handleSingleColoredLures = async (specie) => {
   const query =
     "SELECT color_first, color_second, color_third FROM fish_catch_database.fish_catch join lures on fish_catch.lure_id = lures.lure_id join lure_color on lures.color_id = lure_color.color_id join species on fish_catch.species_id = species.species_id where species_name = ?";
   const [result] = await db.promise().execute(query, [specie]);
-  console.log(result)
   const formedData = handleConditions(result);
   return formedData;
 };

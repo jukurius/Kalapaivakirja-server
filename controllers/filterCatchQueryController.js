@@ -7,7 +7,6 @@ app.use(express.json());
 
 const handleFilterQuery = async (req, res) => {
     const filters = req.query;
-    console.log(filters);
     const page = parseInt(filters.page) || 1;
     const perPage = 20;
     const startIndex = (page - 1) * perPage;
@@ -49,8 +48,6 @@ const handleFilterQuery = async (req, res) => {
       `;
   
       const searchQueryParams = filterValues.length > 0 ? [...filterValues, startIndex, perPage] : [startIndex, perPage];
-      console.log('Executing query:', sqlSearch);
-      console.log('Query parameters:', searchQueryParams);
       const [results] = await connection.query(sqlSearch, searchQueryParams);
   
       const catchIds = results.map((item) => item.catch_id);

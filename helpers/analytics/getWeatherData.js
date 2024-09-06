@@ -32,7 +32,6 @@ const handleConditions = (data) => {
     for (const key in colors) {
         if (Object.hasOwnProperty.call(colors, key)) {
             if (key === value) { 
-                console.log("löytyi")
                 return colors[key];
             }
         }

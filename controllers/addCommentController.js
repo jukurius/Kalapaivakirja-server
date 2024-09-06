@@ -8,9 +8,7 @@ const handleCommentPost = async (req, res) => {
     const catchId = req.body.catchId;
     const comment_content = req.body.commentContent;
     if (!user || !comment_content || !catchId) res.sendStatus(400);
-    console.log(user);
-    console.log(catchId);
-    console.log(comment_content);
+    
     try {
         const connection = await db.promise().getConnection();
         const userQuery = "SELECT user_id FROM users WHERE username = ?";

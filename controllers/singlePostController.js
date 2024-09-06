@@ -8,7 +8,6 @@ const { format } = require("date-fns");
 const handleSinglePost = async (req, res) => {
   const postId = req.query.id;
   if (!postId) return res.sendStatus(404);
-  console.log(postId)
   try {
     const connection = await db.promise().getConnection();
     const sqlSearch = `

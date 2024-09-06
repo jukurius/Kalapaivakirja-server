@@ -14,7 +14,6 @@ const imgToCloudinary = require("../helpers/imgToCloudinary");
 
 const handleUploadCatch = async (req, res) => {
   const specie = req.body.specie || undefined; // musthave c
-  console.log(specie);
   const specieWeight = req.body.specieWeight || undefined; // musthave c
   const specieLength = req.body.specieLength || null;
   const lure = req.body.lure || undefined; // musthave c

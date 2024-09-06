@@ -17,7 +17,6 @@ const handleUserDelete = async (req, res) => {
       if (results) {
         const sqlDelete = "DELETE FROM users WHERE username = ?";
         // await connection.execute(sqlDelete, [username]);
-        console.log(results);
         res.json(results);
       } else {
         res.sendStatus(404);

@@ -6,7 +6,7 @@ const { format } = require("date-fns");
 
 const handleComments = async (req, res) => {
     const catchId = req.query.catchId;
-    console.log(req.query)
+    
     if (!catchId) return res.sendStatus(400);
     try {
         const connection = await db.promise().getConnection();

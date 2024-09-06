@@ -22,8 +22,6 @@ const handleNewUser = async (req, res) => {
     const method = req.body.method || null;
     const imageArr = [];
 
-    console.log(image)
-
     if (image !== null) {
         imageArr.push(image);
     }
