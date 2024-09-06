@@ -55,6 +55,7 @@ app.use("/user", require("./routes/API/user"));
 app.use("/catches", require("./routes/API/postsByUser"));
 app.use("/analytics", require("./routes/API/analytics"));
 app.use("/user/delete", require("./routes/API/deleteUser"));
+app.get("/", (req, res) => res.send("Express on Vercel"));
 
 const port = process.env.PORT;
 app.listen(port, () => console.log(`Server Started on port ${port}...`));
